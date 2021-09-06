@@ -1,0 +1,244 @@
+﻿<UserControl x:Class="PdfReader.Views.WorkSpaceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:xcdg="http://schemas.xceed.com/wpf/xaml/datagrid"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:convert="clr-namespace:PdfReader.Converter"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <convert:LoadingDataCheckConverter x:Key="loadingDataCheckConverter"></convert:LoadingDataCheckConverter>
+        <!--**************************
+            * TEMPLATE: Row 
+            ************************** -->
+        <ControlTemplate x:Key="tableflowViewRowTemplate"
+                    TargetType="{x:Type xcdg:DataRow}">
+
+            <ControlTemplate.Resources>
+                <xcdg:TypeToBooleanConverter x:Key="typeToBooleanConverter" />
+            </ControlTemplate.Resources>
+
+            <Border x:Name="border" SnapsToDevicePixels="true" BorderThickness="3" BorderBrush="Transparent" Margin="10">
+                <!-- This Grid is used to layout the GroupLevelIndicatorPane placeholder and the CellsHost panel. -->
+                <Grid x:Name="rootGrid" >
+                    <Grid.ColumnDefinitions>
+                        <!-- HierarchicalGroupLevelIndicatorPane -->
+                        <ColumnDefinition Width="Auto" />
+                        <!-- GroupLevelIndicatorPane -->
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+
+                        <!-- CellsHost panel -->
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <xcdg:HierarchicalGroupLevelIndicatorPane xcdg:TableView.CanScrollHorizontally="False"
+                                                    Grid.Column="0" />
+
+                    <!-- GroupLevelIndicatorPane is a placeholder for individual GroupLevelIndicator elements that are added
+                       whenever this Row is part of a group. -->
+                    <xcdg:GroupLevelIndicatorPane x:Name="groupLevelIndicatorPane"
+                                        xcdg:TableView.CanScrollHorizontally="False"
+                                        Grid.Column="1" />
+
+                    <Border x:Name="outerBackground"
+                 Grid.Column="2"
+                 Grid.ColumnSpan="2"
+                 Background="{TemplateBinding Background}"
+                 BorderBrush="{TemplateBinding BorderBrush}"
+                 BorderThickness="{TemplateBinding BorderThickness}"
+                 xcdg:TableView.CanScrollHorizontally="False" />
+
+                    <Border x:Name="rowBorder"
+                 Grid.Column="2"
+                 Grid.ColumnSpan="2"
+                 BorderThickness="1"
+                 CornerRadius="3"
+                 xcdg:TableView.CanScrollHorizontally="False">
+                        <Border x:Name="innerBackground"
+                    BorderThickness="1"
+                    CornerRadius="2" />
+                    </Border>
+
+                    <!-- Button that is used to expand/collapse the group. -->
+
+
+                    <!-- This TextBlock is used to ensure that the DesiredSize for 
+         the Row will never fall below the Height of a String using the inherited font size and face-->
+                    <TextBlock Text=""
+                    Visibility="Hidden"
+                    Grid.Column="3"
+                    Margin="{TemplateBinding BorderThickness}" />
+
+                    <!-- The PART_CellsHost part designates the Panel to which this Row's Cells should be added.-->
+                    <xcdg:FixedCellPanel x:Name="PART_CellsHost"
+                               Grid.Column="3"
+                               ColumnStretchMinWidth="{Binding RelativeSource={RelativeSource Self}, Path=(xcdg:DataGridControl.DataGridContext).ColumnStretchMinWidth}"
+                               ColumnStretchMode="{Binding RelativeSource={RelativeSource Self}, Path=(xcdg:DataGridControl.DataGridContext).ColumnStretchMode}"
+                               FixedCellCount="{Binding RelativeSource={RelativeSource Self}, Path=(xcdg:DataGridControl.DataGridContext).FixedColumnCount, Mode=TwoWay}"
+                               FixedColumnDropMarkPen="{Binding RelativeSource={RelativeSource Self}, Path=(xcdg:DataGridControl.DataGridContext).FixedColumnDropMarkPen}"
+                               Margin="{TemplateBinding BorderThickness}" />
+
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter TargetName="border" Property="BorderBrush" Value="#FFC000" />
+                    <Setter TargetName="border" Property="BorderThickness" Value="3" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+
+        </ControlTemplate>
+        <!--**************************
+            * TEMPLATE: RowSelector 
+            ************************** -->
+        <ControlTemplate x:Key="tableflowViewRowSelectorTemplate"
+                    TargetType="{x:Type xcdg:RowSelector}">
+
+            <!-- This Grid is used to position the resizer Thumb over the RowSelector -->
+            <Grid>
+
+                <Border x:Name="rootBorder"
+                 Background="{TemplateBinding Background}"
+                 BorderBrush="{TemplateBinding BorderBrush}"
+                 BorderThickness="{TemplateBinding BorderThickness}">
+
+                    <Grid>
+                        <Viewbox MaxHeight="16"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                            <ContentPresenter x:Name="contentPresenter"
+                                    Margin="{TemplateBinding Padding}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+                        </Viewbox>
+
+                        <!-- This is the two white lines we see at top and bottom of the RowSelector Item. More visible on MouseOver -->
+                        <Border BorderThickness="0,1,0,1"
+                       Margin="0,1,0,0"
+                       BorderBrush="Black"
+                       Opacity="0.4" />
+
+                    </Grid>
+                </Border>
+
+                <!-- Thumb that is used to resize the Row. -->
+                <Thumb x:Name="PART_RowResizerThumb"
+                VerticalAlignment="Bottom" />
+
+            </Grid>
+
+        </ControlTemplate>
+
+        <Style x:Key="mySelectorStyle" TargetType="{x:Type xcdg:RowSelector}">
+            <Setter Property="Template" Value="{StaticResource tableflowViewRowSelectorTemplate}"></Setter>
+        </Style>
+
+        <Style TargetType="{x:Type xcdg:DataRow}">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"></Setter>
+            <Setter Property="Background" Value="Transparent"></Setter>
+            <Setter Property="Template" Value="{StaticResource tableflowViewRowTemplate}"></Setter>
+        </Style>
+
+        <Style TargetType="{x:Type xcdg:DataCell}">
+            <Setter Property="CurrentForeground">
+                <Setter.Value>
+                    <SolidColorBrush Color="Transparent"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CurrentBackground">
+                <Setter.Value>
+                    <SolidColorBrush Color="Transparent"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type xcdg:TableViewScrollViewer}">
+            <Setter Property="HorizontalScrollBarVisibility"
+              Value="Hidden"/>
+            <Setter Property="VerticalScrollBarVisibility"
+              Value="Hidden"/>
+            <Setter Property="cal:Message.Attach" Value="[Event ScrollChanged] = [Action OnScrollChanged($eventargs)]"/>
+        </Style>
+        
+    </UserControl.Resources>
+    <Grid>
+        <TextBlock Foreground="Blue" FontSize="32">
+            <TextBlock.Text>
+                <MultiBinding xml:space="preserve" StringFormat="{}{0}/{1}">
+                    <Binding Path="CurrentPageNumber" />
+                    <Binding Path="TotleCount" />
+                 </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+        <xcdg:DataGridControl Background="Transparent" Grid.Row="1" x:Name="xcdg" AutoCreateColumns="False" ScrollViewer.PanningMode="Both"  ItemsSource="{Binding Items}"
+                              SelectionMode="Single" SelectionUnit="Row">
+            <!--<i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <cal:ActionMessage MethodName="OnSelectionChanged">
+                        <cal:Parameter Value="$source"></cal:Parameter>
+                    </cal:ActionMessage>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>-->
+            <xcdg:DataGridControl.View>
+                <xcdg:TableflowView ShowRowSelectorPane="False" FixedColumnCount="1"
+                                    UseDefaultHeadersFooters="False" IsAlternatingRowStyleEnabled="False"
+                                    ContainerHeight="1400"/>
+            </xcdg:DataGridControl.View>
+            <xcdg:DataGridControl.Columns>
+                <xcdg:Column FieldName="." AllowGroup="False" AllowSort="False" Width="*">
+                    <xcdg:Column.CellContentTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Border>
+                                        <Grid>
+                                            <Image Source="{Binding Image}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            </Image>
+                                        </Grid>
+                                    </Border>
+                                    <Label x:Name="labNum" Grid.Row="1" Margin="0" Foreground="#FFC000" FontSize="25" FontFamily="Segoe UI" Content="{Binding PageNumber}"
+                                       HorizontalAlignment="Center" />
+                                </Grid>
+                                <Grid Background="Aqua" Visibility="{Binding Converter={StaticResource loadingDataCheckConverter}}">
+                                    <TextBlock Text="亲，加载中哦......" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="25"></TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </xcdg:Column.CellContentTemplate>
+                </xcdg:Column>
+            </xcdg:DataGridControl.Columns>
+
+        </xcdg:DataGridControl>
+        <ScrollViewer Visibility="Collapsed">
+            <ItemsControl ItemsSource="{Binding Path=FakeItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Border>
+                                <Grid>
+                                    <Image Source="{Binding Image}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    </Image>
+                                </Grid>
+                            </Border>
+                            <Label x:Name="labNum" Grid.Row="1" Margin="0" Foreground="#FFC000" FontSize="25" FontFamily="Segoe UI" Content="{Binding PageNumber}"
+                                       HorizontalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
